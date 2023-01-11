@@ -19,10 +19,13 @@ import randomId from "../../hooks/randomId";
 // moment
 import moment from "moment";
 import useClickOutSide from "../../hooks/useClickOutSide";
+import useSocket from "../../hooks/useSocket";
 
 function AppFriends({ state, actions }) {
 
     const router = useRouter();
+
+    const { updateStatus } = useSocket();
 
     const { auth } = state;
     const chats = state.chat.chats;
@@ -154,7 +157,8 @@ function AppFriends({ state, actions }) {
 
     const handleChangeStatus = (status) => {
         if(status !== auth.status) {
-            actions.updateUserState(status);
+            actions.updateUserStatus(status);
+            updateStatus({ _id: auth._id, username: auth.username, tag: auth.tag, profilePhoto: auth.profilePhoto, status, bannerColor: auth.bannerColor })
         }
         setProfileCardAnim(true);
         setTimeout(() => {
@@ -190,7 +194,7 @@ function AppFriends({ state, actions }) {
                                 y: e.pageY,
                                 });
                             }}>
-                                <AppChatItem props={{ chat: chat.users.filter( user => user._id != auth._id )[0], unreadMessages: chat.lastMessages.messages }} />
+                                <AppChatItem props={{ chat: chat.users.filter( user => user._id != auth._id )[0], unreadMessages: chat.lastMessages, auth: state.auth }} />
                             </div>
                         )) : (
                             <div className="text-center pt-4">Aún no tienes chats</div>

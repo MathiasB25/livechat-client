@@ -15,13 +15,16 @@ import Modal from "../Modal";
 import ContextMenu from "../ContextMenu";
 import moment from "moment/moment";
 import useClickOutSide from "../../hooks/useClickOutSide";
+import useSocket from "../../hooks/useSocket";
 
 function AppFriendsList({ state, actions, filterBy }) {
 
     const router = useRouter();
 
+    const { acceptFriendRequest, cancelFriendRequest, ioDeleteFriend } = useSocket();
+
     const auth = state.auth;
-    const friends = auth.friends;
+    const friends = auth.friends; 
     const pendingRequests = auth.pendingRequests;
     
     const [ selectedFriend, setSelectedFriend ] = useState({});
@@ -31,7 +34,7 @@ function AppFriendsList({ state, actions, filterBy }) {
         if(friends.length != 0) {
             switch (filterBy) {
                 case "online":
-                    const online = friends.filter( friend => friend.status === 'online' || friend.status === 'away' || friend.status === 'occupied' );
+                    const online = friends.filter( friend => friend.blocked === false && friend.status === 'online' || friend.status === 'away' || friend.status === 'occupied' );
                     setFilteredFriends(online);
                     break;
                 case "all":
@@ -104,23 +107,28 @@ function AppFriendsList({ state, actions, filterBy }) {
     }
 
     const blockFriend = (userId) => {
+        // ioBlockFriend(from: state.auth._id, to: userId);
         actions.blockFriend(userId);
     }
     
     const unblockFriend = (userId) => {
+        // ioUnblockFriend(from: state.auth._id, to: userId);
         actions.unblockFriend(userId);
     }
 
     const removeFriend = (userId) => {
+        ioDeleteFriend({ from: state.auth._id, to: userId });
         actions.removeFriend(userId);
     }
 
     const handleAcceptFriendRequest = (request) => {
+        acceptFriendRequest(request);
         actions.acceptPendingRequest(request);
     }
 
     const handleDeleteFriendRequest = (request) => {
-        actions.deletePendingRequest(request)
+        cancelFriendRequest({ request, canceledBy: state.auth._id });
+        actions.deletePendingRequest(request);
     }
 
     const filter = filterBy == 'online' ? 'En línea' : filterBy == 'all' ? 'Todos los amigos' : filterBy == 'pending' ? 'Pendientes' : 'Bloqueados';

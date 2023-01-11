@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 
 export default function AppUserStatus({status, size}) {
 
-    const [ color, setColor ] = useState('');
+    const [ color, setColor ] = useState(status === 'online' ? 'bg-green-700' : status === 'away' ? 'bg-yellow-600' : status === 'invisible' ? 'bg-zinc-400' : status === 'occupied' ? 'bg-red-500' : status === 'offline' && 'bg-zinc-400');
 
     useEffect(() => {
-        const color = status === 'online' ? 'bg-green-700' : status === 'away' ? 'bg-yellow-600' : status === 'invisible' ? 'bg-zinc-400' : status === 'occupied' ? 'bg-red-500' : status === 'offline' && 'bg-zinc-400';
-        setColor(color);
+        const newColor = status === 'online' ? 'bg-green-700' : status === 'away' ? 'bg-yellow-600' : status === 'invisible' ? 'bg-zinc-400' : status === 'occupied' ? 'bg-red-500' : status === 'offline' && 'bg-zinc-400';
+        if(newColor != color) {
+            setColor(newColor);
+        }
     }, [status])
     
     return(

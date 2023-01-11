@@ -25,6 +25,11 @@ import {
     FRIENDS_ERROR,
     AUTH_ERROR_MESSAGE,
     LOGOUT,
+    // SOCKET.IO
+    IO_UPDATE_FRIEND_STATUS,
+    IO_RECEIVE_FRIEND_REQUEST,
+    IO_ACCEPTED_FRIEND_REQUEST,
+    IO_CANCELED_FRIEND_REQUEST,
 } from '../types';
 
 const initalState = {
@@ -233,6 +238,36 @@ export default function(state = initalState, action) {
                 authenticated: false,
                 error: false,
                 loading: false
+            }
+
+        // ------------- Socket.IO -------------
+        
+        case IO_UPDATE_FRIEND_STATUS:
+            return {
+                ...state,
+                friends: state.friends.map(friend => {
+                    if(friend._id === action.payload._id) {
+                        friend = { ...friend, status: action.payload.status }
+                        return friend;
+                    }
+                    return friend;
+                })
+            }
+        case IO_RECEIVE_FRIEND_REQUEST: 
+            return {
+                ...state,
+                pendingRequests: state.pendingRequests.concat(action.payload)
+            }
+        case IO_ACCEPTED_FRIEND_REQUEST: 
+            return {
+                ...state,
+                friends: state.friends.concat(action.payload.to),
+                pendingRequests: state.pendingRequests.filter(request => request._id !== action.payload._id)
+            }
+        case IO_CANCELED_FRIEND_REQUEST: 
+            return {
+                ...state,
+                pendingRequests: state.pendingRequests.filter(request => request._id !== action.payload._id)
             }
         default:
             return state;

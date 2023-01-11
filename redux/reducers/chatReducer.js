@@ -3,11 +3,17 @@ import {
     GET_CHATS_SUCCESS,
     SET_CHAT_MESSAGES,
     SET_SELECTED_CHAT,
-    SET_MESSAGES_READED,
+    SET_MESSAGES_READ,
     SEND_CHAT_MESSAGE, 
     SEND_CHAT_MESSAGE_SUCCESS, 
     RESET_CHAT,
     CHAT_ERROR,
+    // SOCKET.IO
+    IO_PUSH_CHAT_MESSAGE,
+    IO_PUSH_LAST_MESSAGE,
+    IO_EDIT_CHAT_MESSAGE,
+    IO_DELETE_CHAT_MESSAGE,
+    IO_UPDATE_CHAT_FRIEND_STATUS
 } from '../types';
 
 const initalState = {
@@ -48,7 +54,7 @@ export default function(state = initalState, action) {
                 ...state,
                 selectedChat: action.payload
             }
-        case SET_MESSAGES_READED: 
+        case SET_MESSAGES_READ: 
             return {
                 ...state,
                 chats: state.chats.map( chat => {
@@ -88,6 +94,50 @@ export default function(state = initalState, action) {
             return {
                 ...state,
                 selectedChat: null
+            }
+
+        // ------------- Socket.IO -------------
+
+        case IO_PUSH_CHAT_MESSAGE: 
+            return {
+                ...state,
+                chats: state.chats.map( chat => {
+                    if(chat._id === action.payload.chatId) {
+                        chat = {...chat, messages: [...chat.messages, { from: action.payload.from, message: action.payload.message, updatedAt: action.payload.updatedAt }]};
+                        return chat;
+                    }
+                    return chat;
+                })
+            }
+        case IO_PUSH_LAST_MESSAGE:
+            return {
+                ...state,
+                chats: state.chats.map( chat => {
+                    if(chat._id === action.payload.chatId) {
+                        chat = {...chat, lastMessages: {from: action.payload.from._id, messages: [...chat.lastMessages.messages, action.payload.messageId], updatedAt: chat.lastMessages.updatedAt}}
+                        return chat;
+                    }
+                    return chat;
+                })
+            }
+        case IO_UPDATE_CHAT_FRIEND_STATUS:
+            return {
+                ...state,
+                chats: state.chats.map(chat => {
+                    const newUsers = chat.users.filter( user => user._id !== action.payload._id );
+                    newUsers.push(action.payload);
+                    chat = { ...chat, users: newUsers };
+                    return chat;
+                    // chat.users.map(user => {
+                    //     if(user._id === action.payload._id) {
+                    //         user = { ...user, status: action.payload.status };
+                    //         return user;
+                    //     }
+                    //     return user;
+                    // })
+                    // console.log(chat);
+                    // return chat;
+                })
             }
         default:
             return state;

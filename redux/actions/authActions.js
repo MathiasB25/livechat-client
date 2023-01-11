@@ -27,6 +27,11 @@ import {
     AUTH_ERROR,
     AUTH_ERROR_MESSAGE,
     LOGOUT,
+    // SOCKET.IO
+    IO_UPDATE_FRIEND_STATUS,
+    IO_RECEIVE_FRIEND_REQUEST,
+    IO_ACCEPTED_FRIEND_REQUEST,
+    IO_CANCELED_FRIEND_REQUEST
 } from '../types';
 import useAxiosConfig from '../../hooks/useAxiosConfig';
 
@@ -65,9 +70,9 @@ export function deleteAuth() {
     }
 }
 
-export function updateUserState(status) {
+export function updateUserStatus(status) {
     return async (dispatch) => {
-        dispatch( updateUserStateAction(status) );
+        dispatch( updateUserStatusAction(status) );
 
         const token = localStorage.getItem('vtNw6cNcqEqD')
             if(!token) {
@@ -156,7 +161,6 @@ export function acceptPendingRequest(request) {
             await axios.post('/api/user/friends/requests/accept', { request: request._id, config });
             dispatch( acceptPendingRequestSuccessAction(request) )
             request.from.blocked = false;
-            request.from.status = 'offline';
             dispatch ( addFriendSuccessAction(request.from) )
         } catch (error) {
             dispatch( friendsErrorAction() );
@@ -185,7 +189,7 @@ export function deletePendingRequest(request) {
 }
 
 // Add Friend
-export function addFriend(username, tag, callback) {
+export function addFriend(username, tag, runToast, sendFriendRequest) {
     return async (dispatch) => {
         dispatch( addFriendAction() )
 
@@ -198,10 +202,11 @@ export function addFriend(username, tag, callback) {
         const config = useAxiosConfig();
         try {
             const { data } = await axios.post('/api/user/friends/add', { username, tag, config });
-            callback(data.msg)
+            sendFriendRequest(data.data);
+            runToast(data.msg)
             dispatch( addFriendRequestAction(data.data) )
         } catch (error) {
-            callback(error.response.data.msg)
+            runToast(error.response.data.msg)
             dispatch( authErrorMessageAction(error.response.data.msg) )
             dispatch( friendsErrorAction() );
         }
@@ -378,7 +383,7 @@ const removeFriendSuccessAction = (userId) => ({
     payload: userId
 })
 
-const updateUserStateAction = (state) => ({
+const updateUserStatusAction = (state) => ({
     type: UPDATE_USER_STATUS,
     payload: state
 })
@@ -412,3 +417,51 @@ const authErrorMessageAction = (message) => ({
 const logoutAction = () => ({
     type: LOGOUT
 })
+
+// ------------- Socket.IO -------------
+// Change Friend Status
+export function updateFriendStatus(friend) {
+    return async (dispatch) => {
+        dispatch( updateFriendStatusAction(friend) );
+    }
+}
+export function receiveFriendRequest(request) {
+    return async (dispatch) => {
+        dispatch( receiveFriendRequestAction(request) );
+    }
+}
+export function acceptedFriendRequest(request) {
+    return async (dispatch) => {
+        dispatch( acceptedFriendRequestAction(request) );
+    }
+}
+export function canceledFriendRequest(request) {
+    return async (dispatch) => {
+        dispatch( canceledFriendRequestAction(request) );
+    }
+}
+
+export function ioDeleteFriend(user) {
+    return async (dispatch) => {
+        dispatch( removeFriendSuccessAction(user) );
+    }
+}
+
+
+// ACTIONS
+const updateFriendStatusAction = (friend) => ({
+    type: IO_UPDATE_FRIEND_STATUS,
+    payload: friend
+});
+const receiveFriendRequestAction = (request) => ({
+    type: IO_RECEIVE_FRIEND_REQUEST,
+    payload: request
+});
+const acceptedFriendRequestAction = (request) => ({
+    type: IO_ACCEPTED_FRIEND_REQUEST,
+    payload: request
+});
+const canceledFriendRequestAction = (request) => ({
+    type: IO_CANCELED_FRIEND_REQUEST,
+    payload: request
+});

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { bindActionCreators } from "redux";
 import { connect } from 'react-redux';
 import * as Actions from '../../redux/actions'
+// Hooks
+import useSocket from '../../hooks/useSocket';
 // Form validation
 import * as Yup from 'yup';
 import { Formik, Form, Field } from 'formik';
@@ -18,6 +20,8 @@ const schema = Yup.object().shape({
 });
 
 function AppAddFriend({ state, actions }) {
+
+    const { sendFriendRequest } = useSocket();
 
     const [ formSubmited, setFormSubmited ] = useState(false);
 
@@ -54,7 +58,7 @@ function AppAddFriend({ state, actions }) {
                         return
                     }
                     setFormSubmited(true);
-                    actions.addFriend(values.username.split('#')[0], values.username.split('#')[1], runToast);
+                    actions.addFriend(values.username.split('#')[0], values.username.split('#')[1], runToast, sendFriendRequest);
                     if(!state.auth.loading) {
                         resetForm();
                         setFormSubmited(false);

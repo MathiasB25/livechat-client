@@ -24,12 +24,34 @@ function AppChat({ state, actions, props }) {
     const [ chat, setChat ] = useState({});
     const [ user, setUser ] = useState({});
     const [ messages, setMessages ] = useState([]);
+
+    // useEffect(() => {
+    //     console.log('mounted')
+    // }, [])
+
+    // useEffect(() => {
+    //     return () => {
+    //         console.log('unmounted')
+    //     }
+    // }, [])
+
+    useEffect(() => {
+        return () => {
+            actions.setMessagesRead(state.chat.selectedChat, true);
+        };
+    }, []);
     
     useEffect(() => {
         if(!state.chat.selectedChat) {
             router.push('/app/friends')
         }
     }, []);
+
+    useEffect(() => {
+        if(chat.lastMessages?.from && chat.lastMessages?.from !== state.auth._id) {
+            actions.setMessagesRead(chat._id);
+        }
+    }, [chat.messages]);
 
     useEffect(() => {
         if(state.chat.selectedChat && state.chat.chats.length != 0) {
@@ -56,7 +78,7 @@ function AppChat({ state, actions, props }) {
         const message = messageInput.current.value;
         e.preventDefault();
         actions.sendMessage({ message, from: { username: state.auth.username, profilePhoto: state.auth.profilePhoto }, createdAt: Date.now() }, state.chat.selectedChat);
-        sendMessage({ from: state.auth._id, to: user._id, message });
+        sendMessage({ from: state.auth, to: user._id, message, updatedAt: Date.now(), chatId: chat._id });
         messageInput.current.value = '';
     }
 

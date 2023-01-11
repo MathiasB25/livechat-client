@@ -1,5 +1,7 @@
 // React
 import { createContext, useEffect } from "react";
+// NextJS
+import { useRouter } from "next/router";
 // SocketIO
 import { io } from "socket.io-client";
 // Redux
@@ -12,44 +14,87 @@ const SocketContext = createContext();
 let socket;
 const SocketProvider = ({ children, state, actions }) => {
 
+    const router = useRouter();
+
     useEffect(() => {
-        socket = io('http://localhost:4000');
-        socket.emit('joinGlobal');
-    }, [])
+        if(state.auth.authenticated) {
+            socket = io('http://localhost:4000');
+            socket.emit('joinGlobal');
+        }
+    }, [state.auth.authenticated])
     
     useEffect(() => {
-        socket.on('receiveMessage', (message) => {
-            console.log(message);
-            if(message.to === state.auth._id) {
-            }
-        })
-    }, [])
+        if(state.auth.authenticated) {
+            socket.on('receiveMessage', (message) => {
+                if(message.to === state.auth._id) {
+                    actions.pushChatMessage(message);
+                }
+            });
+            socket.on('userChangeStatus', (user) => {
+                state.auth.friends.map(friend => {
+                    if(friend._id === user._id && user._id !== state.auth._id) {
+                        actions.updateFriendStatus(user);
+                        actions.updateChatFriendStatus(user);
+                    }
+                });
+            });
+            socket.on('receiveFriendRequest', (request) => {
+                if(request.to._id === state.auth._id) {
+                    actions.receiveFriendRequest(request);
+                }
+            });
+            socket.on('acceptedFriendRequest', (request) => {
+                if(request.from._id === state.auth._id) {
+                    request.to.blocked = false;
+                    actions.acceptedFriendRequest(request);
+                }
+            });
+            socket.on('canceledFriendRequest', (canceled) => {
+                if(canceled.canceledBy !== state.auth._id) {
+                    actions.canceledFriendRequest(canceled.request);
+                }
+            });
+            socket.on('deleteFriend', (users) => {
+                const userIsFriend = state.auth.friends.filter(friend => friend._id === users.from);
+                if(userIsFriend.length != 0 && users.to === state.auth._id) {
+                    actions.ioDeleteFriend(users.from);
+                }
+            });
+        }
+    }, [state.auth.authenticated])
 
     const sendMessage = (message) => {
         socket.emit('sendMessage', message);
     }
 
-    // useEffect(() => {
-    //     if(state.auth.username) {
-    //         socket.emit('joinMessages', '43278432432');
-    //         socket.emit('joinFriend', '43298473289423');
-    //         socket.emit('message', { from: state.auth.username, message: 'Hola, que tal?' });
-    //         socket.emit('friend', { _id: '8u4832jf89jr893j89f', username: 'Noxs' });
-    //     }
-    // }, [state.auth.username])
+    const updateStatus = (user) => {
+        socket.emit('userChangeStatus', user);
+    }
 
-    // useEffect(() => {
-    //     socket.on('friend', (message) => {
-    //         console.log(message);
-    //     })
-    //     socket.on('message', (message) => {
-    //         console.log(message);
-    //     })
-    // }, [])
+    const sendFriendRequest = (request) => {
+        socket.emit('sendFriendRequest', request); 
+    }
+
+    const acceptFriendRequest = (request) => {
+        socket.emit('acceptFriendRequest', request); 
+    }
+    
+    const cancelFriendRequest = (request) => {
+        socket.emit('cancelFriendRequest', request); 
+    }
+
+    const ioDeleteFriend = (users) => {
+        socket.emit('deleteFriend', users); 
+    }
 
     return (
         <SocketContext.Provider value={{
-            sendMessage
+            sendMessage,
+            updateStatus,
+            sendFriendRequest,
+            acceptFriendRequest,
+            cancelFriendRequest,
+            ioDeleteFriend,
         }}>
             { children }
         </SocketContext.Provider>
