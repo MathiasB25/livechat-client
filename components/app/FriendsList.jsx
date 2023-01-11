@@ -85,7 +85,9 @@ function AppFriendsList({ state, actions, filterBy }) {
                         }
                     })
                 })
-                actions.setSelectedChat(friend, chat ? chat._id : null);
+                actions.setSelectedChat(friend, chat ? chat._id : null, pushToChat).then(() => {
+                    pushToChat();
+                });
             } else {
                 let chat = {};
                 state.chat.chats.filter( mapChat => {
@@ -95,14 +97,21 @@ function AppFriendsList({ state, actions, filterBy }) {
                         }
                     })
                 })
-                actions.setSelectedChat(selectedFriend);
+                actions.setSelectedChat(selectedFriend, chat ? chat._id : null, pushToChat).then(() => {
+                    pushToChat();
+                });
             }
-            router.push('/app/chat')
             return
         }
         if(e.id === 'removeFriend') {
             handleShowModal();
             setSelectedFriend(friend);
+        }
+    }
+
+    const pushToChat = () => {
+        if(state.chat.selectedChat) {
+            router.push('/app/chat')
         }
     }
 

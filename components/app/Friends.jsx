@@ -31,11 +31,14 @@ function AppFriends({ state, actions }) {
     const chats = state.chat.chats;
     const [ selectedChat, setSelectedChat ] = useState(null);
 
-    const handleSelectedChat = (user, chatId) => {
+    const handleSelectedChat = (e, user, chatId) => {
+        if(e?.target?.id === 'xmark' || e?.target?.id === 'xmarkContainer') {
+            return;
+        }
         if(!chatId) {
             state.chat.chats.filter( mapChat => {
                 mapChat.users.map( userMap => {
-                    if(userMap._id === user._id) {
+                    if(userMap._id === user?._id) {
                         chatId = mapChat._id;
                     }
                 })
@@ -186,7 +189,7 @@ function AppFriends({ state, actions }) {
                     </div>
                     <div className="flex flex-col gap-1">
                         { chats.length != 0 ? chats.map( chat => (
-                            <div key={randomId()} onClick={() => handleSelectedChat(chat.users.filter( user => user._id != auth._id )[0], chat._id)} onContextMenu={(e) => {
+                            <div key={randomId()} onClick={(e) => handleSelectedChat(e, chat.users.filter( user => user._id != auth._id )[0], chat._id)} onContextMenu={(e) => {
                                 setClicked(true);
                                 setSelectedFriend( chat.users.filter( user => user._id != auth._id )[0] );
                                 setPoints({
@@ -194,7 +197,7 @@ function AppFriends({ state, actions }) {
                                 y: e.pageY,
                                 });
                             }}>
-                                <AppChatItem props={{ chat: chat.users.filter( user => user._id != auth._id )[0], unreadMessages: chat.lastMessages, auth: state.auth }} />
+                                <AppChatItem props={{ chat: chat.users.filter( user => user._id != auth._id )[0], unreadMessages: chat.lastMessages, auth: state.auth, chatId: chat._id }} />
                             </div>
                         )) : (
                             <div className="text-center pt-4">Aún no tienes chats</div>
@@ -306,7 +309,7 @@ function AppFriends({ state, actions }) {
                 <ContextMenu top={`${points.y}px`} left={`${points.x}px`}>
                     <div className="text-base flex flex-col p-3 bg-app-8 rounded-md" style={{width: '13rem'}}>
                         <div className={"p-2 hover:bg-violet-500 hover:text-white transition-colors rounded cursor-pointer"} onClick={() => handleShowProfileModal(selectedFriend)}>Ver perfil</div>
-                        <div className={"p-2 hover:bg-violet-500 hover:text-white transition-colors rounded cursor-pointer"} onClick={(e) => handleSelectedChat(selectedFriend, null)}>Enviar mensaje</div>
+                        <div className={"p-2 hover:bg-violet-500 hover:text-white transition-colors rounded cursor-pointer"} onClick={(e) => handleSelectedChat(e, selectedFriend, null)}>Enviar mensaje</div>
                         <div className={"p-2 hover:bg-violet-500 hover:text-white transition-colors rounded cursor-pointer"}>Llamar</div>
                         <div className={"p-2 hover:bg-violet-500 hover:text-white transition-colors rounded cursor-pointer"} onClick={(e) => selectedFriend.blocked ? unblockFriend(selectedFriend._id) : blockFriend(selectedFriend._id)}>{ selectedFriend.blocked ? 'Desbloquear' : 'Bloquear' }</div>
                         <div className={"p-2 hover:bg-violet-500 hover:text-white transition-colors rounded cursor-pointer"} id="removeFriend" onClick={handleShowModal}>Eliminar amigo</div>
@@ -331,7 +334,7 @@ function AppFriends({ state, actions }) {
                                 </div>
                             </div>
                             <div className="flex items-center justify-end gap-2 py-5">
-                                <div className="py-2 px-4 bg-violet-500 hover:bg-violet-800 text-zinc-100 rounded-md cursor-pointer transition-colors" id="friend" onClick={(e) => handleSelectedChat(selectedFriend, null)}>Enviar mensaje</div>
+                                <div className="py-2 px-4 bg-violet-500 hover:bg-violet-800 text-zinc-100 rounded-md cursor-pointer transition-colors" id="friend" onClick={(e) => handleSelectedChat(e, selectedFriend, null)}>Enviar mensaje</div>
                             </div>
                             <div className="flex flex-col gap-5 bg-app-5 p-3 rounded-lg">
                                 <div className="flex items-end text-xl font-semibold select-text">

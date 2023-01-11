@@ -1,6 +1,7 @@
 import { 
     GET_CHATS,
     GET_CHATS_SUCCESS,
+    HIDE_CHAT,
     SET_CHAT_MESSAGES,
     SET_SELECTED_CHAT,
     SET_MESSAGES_READ,
@@ -36,23 +37,31 @@ export default function(state = initalState, action) {
                 ...state,
                 chats: action.payload
             }
-        case SET_CHAT_MESSAGES: 
+        case HIDE_CHAT: 
             return {
                 ...state,
-                chats: Object.keys(action.payload.chat).length != 0 ? state.chats.concat(action.payload.chat) : state.chats,
-                chats: state.chats.map( chat => {
-                    if(chat._id === action.payload.chatId) {
-                        chat = { ...chat, messages: [] };
-                        chat.messages = [...chat.messages, ...action.payload.messages];
-                        return chat;
-                    }
-                    return chat;
-                })
+                chats: state.chats.filter( chat => chat._id !== action.payload )
+            }
+        case SET_CHAT_MESSAGES: 
+            let newChats = state.chats;
+            if(Object.keys(action.payload.chat).length != 0) {
+                newChats = [...newChats, action.payload.chat];
+            }
+            newChats.map( chat => {
+                if(chat._id === action.payload.chatId) {
+                    chat = { ...chat, messages: [] };
+                    chat.messages = [...chat.messages, ...action.payload.messages];
+                }
+            })
+            console.log(newChats);
+            return {
+                ...state,
+                chats: newChats
             }
         case SET_SELECTED_CHAT: 
             return {
                 ...state,
-                selectedChat: action.payload
+                selectedChat: action.payload.chatId
             }
         case SET_MESSAGES_READ: 
             return {

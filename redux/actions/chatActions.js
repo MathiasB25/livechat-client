@@ -3,6 +3,7 @@ import axios from 'axios';
 import { 
     GET_CHATS,
     GET_CHATS_SUCCESS,
+    HIDE_CHAT,
     SET_CHAT_MESSAGES,
     SET_SELECTED_CHAT,
     SET_MESSAGES_READ,
@@ -44,6 +45,24 @@ export function getChats() {
     }
 }
 
+export function hideChat(chatId) {
+    return async (dispatch) => {
+        // If no JWT return
+        const config = useAxiosConfig();
+        if(config.headers.Authorization.includes('null')) {
+            dispatch( chatErrorAction() );
+            return;
+        }
+
+        try {
+            await axios.post('/api/chat/hideChat', { chatId, config });
+            dispatch( hideChatAction(chatId) );
+        } catch (error) {
+            dispatch ( chatErrorAction() )
+        }
+    }
+}
+
 export function getChatMessages(user, callback) {
     return async (dispatch) => {
         // If no JWT return
@@ -59,8 +78,8 @@ export function getChatMessages(user, callback) {
             const chat = data.chat;
             const messages = data.messages;
             const chatId = chat._id;
-            callback();
             dispatch( setChatMessagesAction(chatId, chat, messages) );
+            callback();
         } catch (error) {
             console.log(error);
             dispatch ( chatErrorAction() )
@@ -75,9 +94,11 @@ export function setChatMessages(chatId, messages) {
     }
 }
 
-export function setSelectedChat(user, chatId) {
+export function setSelectedChat(user, chatId, callback) {
     return async (dispatch) => {
-        dispatch ( setSelectedChatAction(chatId) );
+        if(chatId) {
+            dispatch ( setSelectedChatAction(chatId) );
+        }
 
         // If no JWT return
         const config = useAxiosConfig();
@@ -90,10 +111,11 @@ export function setSelectedChat(user, chatId) {
             const { data } = await axios.post('/api/chat/getMessages', { user: user._id, config });
             // Set chat messages
             const chat = data.chat;
-            const messages = data.messages;
             if(!chatId) {
                 chatId = chat._id;
+                dispatch( setSelectedChatAction(chatId) );
             }
+            const messages = data.messages;
             dispatch( setChatMessagesAction(chatId, chat, messages) );
             // dispatch( setMessagesReadAction(chatId) );
         } catch (error) {
@@ -164,6 +186,12 @@ const getChatsSuccessAction = (chats) => ({
     payload: chats
 })
 
+// Hide Chat
+const hideChatAction = (chatId) => ({
+    type: HIDE_CHAT,
+    payload: chatId
+})
+
 // Set Chat Messages
 const setChatMessagesAction = (chatId, chat, messages) => ({
     type: SET_CHAT_MESSAGES,
@@ -173,7 +201,7 @@ const setChatMessagesAction = (chatId, chat, messages) => ({
 // Set Selected Chat
 const setSelectedChatAction = (chatId) => ({
     type: SET_SELECTED_CHAT,
-    payload: chatId
+    payload: { chatId } 
 })
 
 // Set Messages Read
