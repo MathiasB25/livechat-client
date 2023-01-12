@@ -1,5 +1,8 @@
 import axios from 'axios';
-
+// Hooks
+import useAxiosConfig from '../../hooks/useAxiosConfig';
+import randomId from '../../hooks/randomId';
+// Types
 import { 
     GET_CHATS,
     GET_CHATS_SUCCESS,
@@ -18,8 +21,7 @@ import {
     IO_DELETE_CHAT_MESSAGE,
     IO_UPDATE_CHAT_FRIEND_STATUS
 } from '../types';
-import useAxiosConfig from '../../hooks/useAxiosConfig';
-import randomId from '../../hooks/randomId';
+
 
 export function getChats() {
     return async (dispatch) => {
@@ -45,7 +47,7 @@ export function getChats() {
     }
 }
 
-export function hideChat(chatId) {
+export function hideChat(chatId, callback) {
     return async (dispatch) => {
         // If no JWT return
         const config = useAxiosConfig();
@@ -56,6 +58,9 @@ export function hideChat(chatId) {
 
         try {
             await axios.post('/api/chat/hideChat', { chatId, config });
+            if(typeof callback === 'function') {
+                callback();
+            }
             dispatch( hideChatAction(chatId) );
         } catch (error) {
             dispatch ( chatErrorAction() )
@@ -79,7 +84,9 @@ export function getChatMessages(user, callback) {
             const messages = data.messages;
             const chatId = chat._id;
             dispatch( setChatMessagesAction(chatId, chat, messages) );
-            callback();
+            if(typeof callback === 'function') {
+                callback();
+            }
         } catch (error) {
             console.log(error);
             dispatch ( chatErrorAction() )
@@ -117,7 +124,9 @@ export function setSelectedChat(user, chatId, callback) {
             }
             const messages = data.messages;
             dispatch( setChatMessagesAction(chatId, chat, messages) );
-            // dispatch( setMessagesReadAction(chatId) );
+            if(typeof callback === 'function') {
+                callback();
+            }
         } catch (error) {
             console.log(error);
             dispatch ( chatErrorAction() )
@@ -232,9 +241,12 @@ const chatErrorAction = () => ({
 
 // ------------- Socket.IO -------------
 // Receive message
-export function pushChatMessage(message) {
+export function pushChatMessage(message, dontPushLastMessage) {
     return async (dispatch) => {
         dispatch( pushChatMessageAction(message) );
+        if(dontPushLastMessage) {
+            return;
+        }
         dispatch( pushLastMessageAction(message) );
     }
 }

@@ -176,9 +176,16 @@ function AppFriends({ state, actions }) {
             <div className="flex flex-col gap-5 p-3 overflow-y-scroll invisible-scrollbar" style={{height: 'calc(100vh - 4.3rem)'}}>
                 <div className="">
                     <Link href={"/app/friends"}>
-                        <div className="flex items-center gap-3 hover:bg-app-3 transition-colors w-full text-left py-3 px-3 rounded-md hover:text-zinc-300 cursor-pointer">
-                            <div><i className="text-xl fa-solid fa-user-group"></i></div>
-                            <div>Amigos</div>
+                        <div className={`flex items-center justify-between hover:bg-app-3 transition-colors w-full text-left py-3 px-3 rounded-md hover:text-zinc-300 cursor-pointer ${router.pathname === '/app/friends' ? 'bg-app-3' : null}`}>
+                            <div className="flex items-center gap-3">
+                                <div><i className="text-xl fa-solid fa-user-group"></i></div>
+                                <div>Amigos</div>
+                            </div>
+                            { state.auth.pendingRequests.length != 0 && (
+                                <div className="grid place-items-center text-white text-sm bg-violet-500 w-5 h-5 rounded-full">
+                                    <div className="relative top-[.01rem] text-[.75rem] font-extrabold">{state.auth.pendingRequests.length}</div>
+                                </div>
+                            )}
                         </div>
                     </Link>
                 </div>

@@ -29,7 +29,10 @@ function AppChatItem({ state, actions, props }) {
     }
 
     const handleDeleteChat = () => {
-        actions.hideChat(props.chatId);
+        actions.hideChat(props.chatId, onDeleteChatRedirect);
+    }
+
+    const onDeleteChatRedirect = () => {
         if(router.pathname === '/app/chat' && props.chatId === state.chat.selectedChat) {
             router.push('/app/friends')
         }

@@ -1,5 +1,5 @@
 // React
-import { createContext, useEffect } from "react";
+import { createContext, useEffect, useState } from "react";
 // NextJS
 import { useRouter } from "next/router";
 // SocketIO
@@ -11,57 +11,71 @@ import * as Actions from '../redux/actions'
 
 const SocketContext = createContext();
 
-let socket;
+const socket = io('http://localhost:4000');
+
 const SocketProvider = ({ children, state, actions }) => {
 
     const router = useRouter();
-
-    useEffect(() => {
-        if(state.auth.authenticated) {
-            socket = io('http://localhost:4000');
-            socket.emit('joinGlobal');
-        }
-    }, [state.auth.authenticated])
     
     useEffect(() => {
-        if(state.auth.authenticated) {
-            socket.on('receiveMessage', (message) => {
-                if(message.to === state.auth._id) {
+        socket.emit('joinGlobal');
+    }, [])
+
+    useEffect(() => {
+        socket.removeAllListeners()
+
+        socket.on('receiveMessage', (message) => {
+            function getChatMessagesCb() {
+                actions.pushChatMessage(message, true);
+            }
+            if(message.to === state.auth._id) {
+                const chatId = message.chatId;
+                const user = message.from;
+                const isChatInState = state.chat.chats.filter(chat => chat._id === chatId);
+                if(isChatInState.length != 0) {
                     actions.pushChatMessage(message);
+                } else {
+                    actions.getChatMessages({ _id: user._id }, getChatMessagesCb)
+                }
+            }
+        });
+        
+        socket.on('userChangeStatus', (user) => {
+            state.auth.friends.map(friend => {
+                if(friend._id === user._id && user._id !== state.auth._id) {
+                    actions.updateFriendStatus(user);
+                    actions.updateChatFriendStatus(user);
                 }
             });
-            socket.on('userChangeStatus', (user) => {
-                state.auth.friends.map(friend => {
-                    if(friend._id === user._id && user._id !== state.auth._id) {
-                        actions.updateFriendStatus(user);
-                        actions.updateChatFriendStatus(user);
-                    }
-                });
-            });
-            socket.on('receiveFriendRequest', (request) => {
-                if(request.to._id === state.auth._id) {
-                    actions.receiveFriendRequest(request);
-                }
-            });
-            socket.on('acceptedFriendRequest', (request) => {
-                if(request.from._id === state.auth._id) {
-                    request.to.blocked = false;
-                    actions.acceptedFriendRequest(request);
-                }
-            });
-            socket.on('canceledFriendRequest', (canceled) => {
-                if(canceled.canceledBy !== state.auth._id) {
-                    actions.canceledFriendRequest(canceled.request);
-                }
-            });
-            socket.on('deleteFriend', (users) => {
-                const userIsFriend = state.auth.friends.filter(friend => friend._id === users.from);
-                if(userIsFriend.length != 0 && users.to === state.auth._id) {
-                    actions.ioDeleteFriend(users.from);
-                }
-            });
-        }
-    }, [state.auth.authenticated])
+        });
+
+        socket.on('receiveFriendRequest', (request) => {
+            console.log('asd')
+            if(request.to._id === state.auth._id) {
+                actions.receiveFriendRequest(request);
+            }
+        });
+
+        socket.on('acceptedFriendRequest', (request) => {
+            if(request.from._id === state.auth._id) {
+                request.to.blocked = false;
+                actions.acceptedFriendRequest(request);
+            }
+        });
+
+        socket.on('canceledFriendRequest', (canceled) => {
+            if(canceled.canceledBy !== state.auth._id) {
+                actions.canceledFriendRequest(canceled.request);
+            }
+        });
+
+        socket.on('deleteFriend', (users) => {
+            const userIsFriend = state.auth.friends.filter(friend => friend._id === users.from);
+            if(userIsFriend.length != 0 && users.to === state.auth._id) {
+                actions.ioDeleteFriend(users.from);
+            }
+        });
+    }, [state.auth.friends])
 
     const sendMessage = (message) => {
         socket.emit('sendMessage', message);

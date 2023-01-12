@@ -20,6 +20,7 @@ const schema = Yup.object().shape({
     username: Yup.string()
         .min(2, 'Nombre de usuario muy corto')
         .max(30, 'Nombre de usuario muy largo')
+        .matches(/^[A-Za-z0-9]*$/, 'No se aceptan caracteres especiales.')
         .required('El nombre de usuario es obligatorio'),
     email: Yup.string()
         .email('Ingresa un correo electrónico válido')

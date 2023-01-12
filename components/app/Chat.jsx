@@ -14,6 +14,8 @@ import AppUserStatus from "./UserStatus";
 // Hooks
 import useSocket from "../../hooks/useSocket";
 import randomId from "../../hooks/randomId";
+// Emoji Picker
+import EmojiPicker from 'emoji-picker-react';
 
 function AppChat({ state, actions, props }) {
 
@@ -37,7 +39,9 @@ function AppChat({ state, actions, props }) {
 
     useEffect(() => {
         return () => {
-            actions.setMessagesRead(state.chat.selectedChat, true);
+            if(state.chat.selectedChat) {
+                actions.setMessagesRead(state.chat.selectedChat, true);
+            }
         };
     }, []);
     
@@ -82,6 +86,17 @@ function AppChat({ state, actions, props }) {
         messageInput.current.value = '';
     }
 
+    const emojisMenu = useRef(null);
+    const [ showEmojis, setShowEmojis ] = useState(false);
+    const handleDisplayEmojis = () => {
+        setShowEmojis(!showEmojis);
+    }
+
+    const handleClickEmoji = (emoji) => {
+        setShowEmojis(false);
+        messageInput.current.value = messageInput.current.value + emoji.emoji;
+    }
+
     return(
         <div className="flex flex-col h-screen bg-app-6" style={{width: 'calc(100vw - 300px)'}}>
             { state.chat.selectedChat && Object.keys(user).length != 0 && (
@@ -114,7 +129,7 @@ function AppChat({ state, actions, props }) {
                             )}
                         </div>
                         <div className="p-5 pt-2">
-                            <div className="flex gap-5 items-center py-3 px-5 bg-app-3 w-full rounded-xl">
+                            <div className="relative flex gap-5 items-center py-3 px-5 bg-app-3 w-full rounded-xl">
                                 <div>
                                     <label htmlFor="uploadFile" className="flex items-center justify-center w-8 h-8 bg-neutral-500 hover:bg-neutral-400 rounded-full text-app-3 transition-colors text-lg cursor-pointer"><i className="fa-solid fa-plus"></i></label>
                                     <input type="file" name="" id="uploadFile" className="hidden" />
@@ -122,7 +137,19 @@ function AppChat({ state, actions, props }) {
                                 <form onSubmit={handleSendMessage} className="w-full">
                                     <input ref={messageInput} type="text" className="text-lg py-2 bg-transparent outline-none w-full placeholder:text-zinc-500" placeholder={`Envía un mensaje a @${ user ? user.username : '' }`} />
                                 </form>
-                                <button className="text-3xl hover:text-zinc-300 transition-colors"><i className="fa-solid fa-face-sunglasses"></i></button>
+                                <button className="text-3xl hover:text-zinc-300 transition-colors" onClick={handleDisplayEmojis}><i className="fa-solid fa-face-sunglasses"></i></button>
+                                { showEmojis && (
+                                    <div ref={emojisMenu} className="absolute right-0 bottom-20 opacity-anim">
+                                        <EmojiPicker 
+                                            theme="dark" 
+                                            onEmojiClick={handleClickEmoji} 
+                                            emojiStyle="twitter" 
+                                            lazyLoadEmojis={true} 
+                                            suggestedEmojisMode="recent" 
+                                            skinTonesDisabled={true}
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

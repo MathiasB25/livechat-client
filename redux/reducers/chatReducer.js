@@ -43,20 +43,19 @@ export default function(state = initalState, action) {
                 chats: state.chats.filter( chat => chat._id !== action.payload )
             }
         case SET_CHAT_MESSAGES: 
-            let newChats = state.chats;
-            if(Object.keys(action.payload.chat).length != 0) {
-                newChats = [...newChats, action.payload.chat];
-            }
-            newChats.map( chat => {
-                if(chat._id === action.payload.chatId) {
-                    chat = { ...chat, messages: [] };
-                    chat.messages = [...chat.messages, ...action.payload.messages];
-                }
-            })
-            console.log(newChats);
+            const newChat = { ...action.payload.chat }
+            newChat.messages = action.payload.messages
             return {
                 ...state,
-                chats: newChats
+                chats: Object.keys(action.payload.chat).length != 0 ? 
+                    state.chats.concat(newChat) : 
+                    state.chats.map(chat => {
+                    if(chat._id === action.payload.chatId) {
+                        chat = { ...chat, messages: action.payload.messages }
+                        return chat;
+                    }
+                    return chat;
+                }),
             }
         case SET_SELECTED_CHAT: 
             return {

@@ -7,6 +7,7 @@ export default async function handler(req, res) {
 		return res.json(data);
 	} catch (error) {
 		const catchError = new Error(error.response.data.msg)
+		console.log(catchError.message)
 		return res.status(400).json(catchError.message);
 	}
 }

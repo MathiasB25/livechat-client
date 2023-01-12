@@ -85,9 +85,7 @@ function AppFriendsList({ state, actions, filterBy }) {
                         }
                     })
                 })
-                actions.setSelectedChat(friend, chat ? chat._id : null, pushToChat).then(() => {
-                    pushToChat();
-                });
+                actions.setSelectedChat(friend, chat ? chat._id : null, pushToChat);
             } else {
                 let chat = {};
                 state.chat.chats.filter( mapChat => {
@@ -97,9 +95,7 @@ function AppFriendsList({ state, actions, filterBy }) {
                         }
                     })
                 })
-                actions.setSelectedChat(selectedFriend, chat ? chat._id : null, pushToChat).then(() => {
-                    pushToChat();
-                });
+                actions.setSelectedChat(selectedFriend, chat ? chat._id : null, pushToChat);
             }
             return
         }
@@ -109,10 +105,9 @@ function AppFriendsList({ state, actions, filterBy }) {
         }
     }
 
-    const pushToChat = () => {
-        if(state.chat.selectedChat) {
-            router.push('/app/chat')
-        }
+    function pushToChat () {
+        console.log()
+        router.push('/app/chat')
     }
 
     const blockFriend = (userId) => {

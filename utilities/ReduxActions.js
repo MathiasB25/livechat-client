@@ -8,8 +8,13 @@ import * as Actions from '../redux/actions'
 function ReduxActions({ state, actions, children }) {
 
     useEffect(() => {
-        actions.getAuth();
+        actions.getAuth(onGetAuth);
+        function onGetAuth() {
+            actions.getPendingRequests();
+            actions.getChats();
+        }
     }, [])
+
 
     return (
         <>

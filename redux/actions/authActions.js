@@ -36,7 +36,7 @@ import {
 import useAxiosConfig from '../../hooks/useAxiosConfig';
 
 //GET auth
-export function getAuth() {
+export function getAuth(callback) {
     return async (dispatch) => {
         dispatch( getAuthAction() )
 
@@ -50,6 +50,9 @@ export function getAuth() {
             const config = useAxiosConfig();
             const { data: auth } = await axios.post('/api/user/profile', { config });
             dispatch(getAuthSuccessAction(auth))
+            if(typeof callback === 'function') {
+                callback();
+            }
         } catch (error) {
             dispatch(authErrorAction())
         }

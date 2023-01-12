@@ -25,10 +25,10 @@ function AppFriendsPage({ state, actions }) {
         setFriendsListFilterBy(filterBy);
     }
 
-    useEffect(() => {
-        actions.getPendingRequests();
-        actions.getChats();
-    }, [])
+    // useEffect(() => {
+    //     actions.getPendingRequests();
+    //     actions.getChats();
+    // }, [])
 
     return(
         <Layout title={'Amigos | LiveChat'}>
@@ -43,7 +43,14 @@ function AppFriendsPage({ state, actions }) {
                         <div className="bg-neutral-700 h-full" style={{width: '1px'}}></div>
                         <div className={`whitespace-nowrap px-2 py-1 hover:bg-neutral-700 transition-colors cursor-pointer rounded-md ${friendsListFilterBy === 'online' && 'bg-neutral-700'}`} onClick={() => handleFriendListFilter('online')}>En línea</div>
                         <div className={`whitespace-nowrap px-2 py-1 hover:bg-neutral-700 transition-colors cursor-pointer rounded-md ${friendsListFilterBy === 'all' && 'bg-neutral-700'}`} onClick={() => handleFriendListFilter('all')}>Todos</div>
-                        <div className={`whitespace-nowrap px-2 py-1 hover:bg-neutral-700 transition-colors cursor-pointer rounded-md ${friendsListFilterBy === 'pending' && 'bg-neutral-700'}`} onClick={() => handleFriendListFilter('pending')}>Pendiente</div>
+                        <div className={`flex items-center gap-2 whitespace-nowrap px-2 py-1 hover:bg-neutral-700 transition-colors cursor-pointer rounded-md ${friendsListFilterBy === 'pending' && 'bg-neutral-700'}`} onClick={() => handleFriendListFilter('pending')}>
+                            <div>Pendiente</div>
+                            { state.auth.pendingRequests.length != 0 && (
+                                <div className="grid place-items-center text-white text-sm bg-violet-500 w-5 h-5 rounded-full">
+                                    <div className="relative top-[.01rem] text-[.75rem] font-extrabold">{state.auth.pendingRequests.length}</div>
+                                </div>
+                            )}
+                        </div>
                         <div className={`whitespace-nowrap px-2 py-1 hover:bg-neutral-700 transition-colors cursor-pointer rounded-md ${friendsListFilterBy === 'blocked' && 'bg-neutral-700'}`} onClick={() => handleFriendListFilter('blocked')}>Bloqueados</div>
                         <div className={`whitespace-nowrap px-2 py-1 bg-violet-500 hover:bg-violet-800 text-white transition-colors cursor-pointer rounded-md`} onClick={handleShowAddFriend}>Agregar amigo</div>
                     </div>
