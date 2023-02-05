@@ -159,7 +159,7 @@ export function setMessagesRead(chatId, fetch) {
 }
 
 // Send message
-export function sendMessage(message, toChat) {
+export function sendMessage(message, toChat, cb) {
     return async (dispatch) => {
         dispatch( sendMessageAction() )
 
@@ -168,10 +168,17 @@ export function sendMessage(message, toChat) {
             dispatch( chatErrorAction() );
             return;
         }
-
         try {
-            await axios.post('/api/chat/sendMessage', { message: message.message, toChat, config });
-            dispatch( sendMessageSuccessAction(message, toChat) );
+            let messsageId;
+            if(message.reply) {
+                const { data } = await axios.post('/api/chat/sendMessage', { message: message.message, toChat, reply: message.reply._id, config });
+                messsageId = data.messageId;
+            } else {
+                const { data } = await axios.post('/api/chat/sendMessage', { message: message.message, toChat, config });
+                messsageId = data.messageId;
+            }
+            dispatch( sendMessageSuccessAction({...message, _id: messsageId}, toChat) );
+            cb(messsageId);
         } catch (error) {
             console.log(error)
             dispatch( chatErrorAction() );

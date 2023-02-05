@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export default async function handler(req, res) {
-	const { message, toChat, config } = req.body;
+	const { message, toChat, reply, config } = req.body;
 	try {
         const { data } =  await axios.request({
             method: 'POST',
@@ -11,7 +11,8 @@ export default async function handler(req, res) {
             },
             data: {
                 message, 
-                toChat
+                toChat,
+                reply
             },
         });
 		return res.json(data);

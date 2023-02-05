@@ -15,7 +15,7 @@ import moment from 'moment';
 
 function AppChatMessage({ state, actions, props }) {
 
-    const { message, chatId, to, auth } = props;
+    const { message, chatId, to, auth, handleReply } = props;
 
     const { editMessage, deleteMessage } = useSocket();
 
@@ -104,7 +104,7 @@ function AppChatMessage({ state, actions, props }) {
                 </div>
                 { !editingMessage && (
                     <div ref={messageOptions} className="hidden absolute items-center bg-app-3 border border-app-7 right-3 -top-4 rounded-l rounded-r">
-                        <div className={`grid place-items-center w-9 h-9 cursor-pointer hover:bg-app-1 transition-colors rounded-l ${message.from._id !== auth ? 'block' : 'hidden'}`}>
+                        <div onClick={() => handleReply(message)} className={`grid place-items-center w-9 h-9 cursor-pointer hover:bg-app-1 transition-colors rounded-l ${message.from._id !== auth ? 'block' : 'hidden'}`}>
                             <i className="fa-solid fa-reply"></i>
                         </div>
                         <div className={`grid place-items-center w-9 h-9 cursor-pointer hover:bg-app-1 transition-colors ${message.from._id !== auth ? 'rounded-r' : 'rounded-l'}`}>

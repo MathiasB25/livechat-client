@@ -154,7 +154,7 @@ export default function(state = initalState, action) {
                 ...state,
                 chats: state.chats.map( chat => {
                     if(chat._id === action.payload.chatId) {
-                        chat = {...chat, messages: [...chat.messages, { from: action.payload.from, message: action.payload.message, updatedAt: action.payload.updatedAt }]};
+                        chat = {...chat, messages: [...chat.messages, { _id: action.payload._id, from: action.payload.from, message: action.payload.message, reply: action.payload.reply, updatedAt: action.payload.updatedAt }]};
                         return chat;
                     }
                     return chat;

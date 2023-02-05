@@ -26,6 +26,8 @@ function AppChat({ state, actions, props }) {
     const [ chat, setChat ] = useState({});
     const [ user, setUser ] = useState({});
     const [ messages, setMessages ] = useState([]);
+    const [ replying, setReplying ] = useState(false);
+    const [ replyMessage, setReplyMessage ] = useState(null);
 
     // useEffect(() => {
     //     console.log('mounted')
@@ -80,10 +82,70 @@ function AppChat({ state, actions, props }) {
     const handleSendMessage = (e) => {
         e.preventDefault();
         const message = messageInput.current.value;
-        e.preventDefault();
-        actions.sendMessage({ message, from: { username: state.auth.username, profilePhoto: state.auth.profilePhoto }, createdAt: Date.now() }, state.chat.selectedChat);
-        sendMessage({ from: state.auth, to: user._id, message, updatedAt: Date.now(), chatId: chat._id });
-        messageInput.current.value = '';
+        function sendMessageCb(_id) {
+            if(replying) {
+                sendMessage({ 
+                    _id,
+                    from: state.auth, 
+                    to: user._id, 
+                    message, 
+                    updatedAt: Date.now(), 
+                    chatId: chat._id, 
+                    reply: { 
+                        _id: replyMessage._id, 
+                        from: user, 
+                        message: replyMessage.message 
+                    } 
+                });
+                setReplying(false);
+            } else {
+                sendMessage({ 
+                    _id,
+                    from: state.auth, 
+                    to: user._id, 
+                    message, 
+                    updatedAt: Date.now(), 
+                    chatId: chat._id 
+                });
+            }
+        }
+        if(replying) {
+            actions.sendMessage(
+                { 
+                    message, 
+                    from: { 
+                        _id: state.auth._id, 
+                        username: state.auth.username, 
+                        profilePhoto: state.auth.profilePhoto 
+                    }, 
+                    reply: { 
+                        _id: replyMessage._id, 
+                        from: user, message: 
+                        replyMessage.message 
+                    }, 
+                    createdAt: Date.now() 
+                }, 
+                state.chat.selectedChat,
+                sendMessageCb
+            );
+            
+            messageInput.current.value = '';
+        } else {
+            actions.sendMessage(
+                { 
+                    message, 
+                    from: { 
+                        _id: state.auth._id, 
+                        username: state.auth.username, 
+                        profilePhoto: state.auth.profilePhoto 
+                    }, 
+                    createdAt: Date.now() 
+                }, 
+                state.chat.selectedChat,
+                sendMessageCb
+            );
+            messageInput.current.value = '';
+        }
     }
 
     const emojisMenu = useRef(null);
@@ -95,6 +157,12 @@ function AppChat({ state, actions, props }) {
     const handleClickEmoji = (emoji) => {
         setShowEmojis(false);
         messageInput.current.value = messageInput.current.value + emoji.emoji;
+    }
+
+    function handleReplyMessage(message) {
+        setReplying(!replying);
+        setReplyMessage(message);
+        messageInput.current.focus();
     }
 
     return(
@@ -126,6 +194,7 @@ function AppChat({ state, actions, props }) {
                                             chatId: chat._id,
                                             to: user._id, 
                                             auth: state.auth._id,
+                                            handleReply: handleReplyMessage
                                         }} />
                                     ))}
                                 </div>
@@ -133,8 +202,14 @@ function AppChat({ state, actions, props }) {
                                 <div className="text-center py-20 text-lg">Aún no hay mensajes en esta conversación.</div>
                             )}
                         </div>
-                        <div className="p-5 pt-2">
-                            <div className="relative flex gap-5 items-center py-3 px-5 bg-app-3 w-full rounded-xl">
+                        <div className="flex flex-col p-5 pt-2">
+                            { replying && (
+                                <div className="flex items-center justify-between p-3 px-5 bg-app-7 rounded-t-xl">
+                                    <span>Replying to <span className="font-semibold">{user.username}</span></span>
+                                    <div onClick={() => setReplying(false)} className="hover:text-zinc-300 transition-colors text-xl leading-3 cursor-pointer"><i className="fa-solid fa-circle-xmark"></i></div>
+                                </div>
+                            )}
+                            <div className={`relative flex gap-5 items-center py-3 px-5 bg-app-3 w-full ${replying ? 'rounded-b-xl' : 'rounded-xl'}`}>
                                 <div>
                                     <label htmlFor="uploadFile" className="flex items-center justify-center w-8 h-8 bg-neutral-500 hover:bg-neutral-400 rounded-full text-app-3 transition-colors text-lg cursor-pointer"><i className="fa-solid fa-plus"></i></label>
                                     <input type="file" name="" id="uploadFile" className="hidden" />
