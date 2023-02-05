@@ -12,13 +12,15 @@ import {
     SET_MESSAGES_READ,
     SEND_CHAT_MESSAGE,
     SEND_CHAT_MESSAGE_SUCCESS,
+    EDIT_CHAT_MESSAGE,
+    EDIT_CHAT_MESSAGE_SUCCESS,
+    DELETE_CHAT_MESSAGE,
+    DELETE_CHAT_MESSAGE_SUCCESS,
     RESET_CHAT,
     CHAT_ERROR,
     // SOCKET.IO
     IO_PUSH_CHAT_MESSAGE,
     IO_PUSH_LAST_MESSAGE,
-    IO_EDIT_CHAT_MESSAGE,
-    IO_DELETE_CHAT_MESSAGE,
     IO_UPDATE_CHAT_FRIEND_STATUS
 } from '../types';
 
@@ -177,6 +179,54 @@ export function sendMessage(message, toChat) {
     }
 }
 
+// Edit message
+export function editChatMessage(chat, fromSocketIO) {
+    return async (dispatch) => {
+        dispatch( editChatMessageAction() );
+
+        if(fromSocketIO) {
+            dispatch( editChatMessageSuccessAction(chat) );
+        } else {
+            const config = useAxiosConfig();
+            if(config.headers.Authorization.includes('null')) {
+                dispatch( chatErrorAction() );
+                return;
+            }
+
+            try {
+                await axios.post('/api/chat/editMessage', { chat, config });
+                dispatch( editChatMessageSuccessAction(chat) );
+            } catch (error) {
+                dispatch( chatErrorAction() );
+            }
+        }
+    }
+}
+
+// Delete message
+export function deleteChatMessage(chat, fromSocketIO) {
+    return async (dispatch) => {
+        dispatch( deleteChatMessageAction() );
+
+        if(fromSocketIO) {
+            dispatch( deleteChatMessageSuccessAction(chat) );
+        } else {
+            const config = useAxiosConfig();
+            if(config.headers.Authorization.includes('null')) {
+                dispatch( chatErrorAction() );
+                return;
+            }
+
+            try {
+                await axios.post('/api/chat/deleteMessage', { chat, config });
+                dispatch( deleteChatMessageSuccessAction(chat) );
+            } catch (error) {
+                dispatch( chatErrorAction() );
+            }
+        }
+    }
+}
+
 export function resetChat() {
     return async (dispatch) => {
         dispatch ( resetChatAction() );
@@ -229,6 +279,24 @@ const sendMessageSuccessAction = (message, toChat) => ({
     payload: { message, toChat }
 })
 
+const editChatMessageAction = () => ({
+    type: EDIT_CHAT_MESSAGE
+})
+
+const editChatMessageSuccessAction = (chat) => ({
+    type: EDIT_CHAT_MESSAGE_SUCCESS,
+    payload: chat
+})
+
+const deleteChatMessageAction = () => ({
+    type: DELETE_CHAT_MESSAGE
+})
+
+const deleteChatMessageSuccessAction = (chat) => ({
+    type: DELETE_CHAT_MESSAGE_SUCCESS,
+    payload: chat
+})
+
 const resetChatAction = () => ({
     type: RESET_CHAT
 })
@@ -250,6 +318,7 @@ export function pushChatMessage(message, dontPushLastMessage) {
         dispatch( pushLastMessageAction(message) );
     }
 }
+
 // Update chat friend status
 export function updateChatFriendStatus(friend) {
     return async (dispatch) => {

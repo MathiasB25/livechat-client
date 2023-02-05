@@ -200,8 +200,8 @@ function AppFriends({ state, actions }) {
                                 setClicked(true);
                                 setSelectedFriend( chat.users.filter( user => user._id != auth._id )[0] );
                                 setPoints({
-                                x: e.pageX,
-                                y: e.pageY,
+                                    x: e.pageX,
+                                    y: e.pageY,
                                 });
                             }}>
                                 <AppChatItem props={{ chat: chat.users.filter( user => user._id != auth._id )[0], unreadMessages: chat.lastMessages, auth: state.auth, chatId: chat._id }} />
@@ -212,9 +212,9 @@ function AppFriends({ state, actions }) {
                     </div>
                 </div>
             </div>
-            <div ref={profileCard} className="relative">
-                <div className="flex items-center justify-between w-full text-left px-2 bg-app-3" style={{height: '4.3rem'}} onClick={handleShowProfileCard}>
-                    <div className="flex items-center gap-3 px-2 h-14 hover:bg-app-0 cursor-pointer rounded-md transition-colors friends-me-hover friend-hover" onClick={() => handleCopyUsername(`${auth.username}#${auth.tag}`)}>
+            <div ref={profileCard} className="relative z-10">
+                <div className="flex items-center justify-between w-full text-left px-2 bg-app-3 rounded-t-md" style={{height: '4.3rem'}}>
+                    <div className="flex items-center gap-3 px-2 h-14 hover:bg-app-0 cursor-pointer rounded-md transition-colors friends-me-hover friend-hover" onClick={handleShowProfileCard}>
                         <div className="relative">
                             { auth.profilePhoto ? (
                                 <img src={auth.profilePhoto} className="rounded-full w-10 h-10" alt="User profile photo" />
@@ -257,9 +257,12 @@ function AppFriends({ state, actions }) {
                             <div className="flex items-center justify-end gap-2 py-8"></div>
                             <div className="flex flex-col bg-app-7 p-3 px-3 rounded-lg">
                                 <div className="flex flex-col gap-5 px-1 pb-1">
-                                    <div className="flex items-end text-2xl font-semibold select-text">
-                                        <div className="text-zinc-200">{auth?.username}</div>
-                                        <div>{`#${auth?.tag}`}</div>
+                                    <div className="flex items-center gap-2 text-2xl font-semibold select-text cursor-pointer" onClick={() => handleCopyUsername(`${auth.username}#${auth.tag}`)}>
+                                        <div className="flex">
+                                            <div className="text-zinc-200">{auth?.username}</div>
+                                            <div>{`#${auth?.tag}`}</div>
+                                        </div>
+                                        <div className="text-zinc-400 text-base hover:text-zinc-200 transition-colors"><i class="fa-regular fa-copy"></i></div>
                                     </div>
                                     <div className="flex flex-col gap-1 text-base">
                                         <div className="uppercase text-zinc-200 font-semibold">Miembro de LiveChat desde</div>
@@ -348,7 +351,7 @@ function AppFriends({ state, actions }) {
                                     <div className="text-zinc-200">{selectedFriend.username}</div>
                                     <div>{`#${selectedFriend.tag}`}</div>
                                 </div>
-                                <div className="flex flex-col gap-1">
+                                <div className="flex flex-col gap-1 text-base">
                                     <div className="uppercase text-zinc-200 font-semibold">Miembro de LiveChat desde</div>
                                     <div>{moment(selectedFriend.createdAt).format('ll')}</div>
                                 </div>

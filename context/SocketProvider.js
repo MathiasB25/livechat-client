@@ -9,9 +9,15 @@ import { bindActionCreators } from "redux";
 import { connect } from 'react-redux';
 import * as Actions from '../redux/actions'
 
+const socket = io('http://localhost:4000');
+
 const SocketContext = createContext();
 
-const socket = io('http://localhost:4000');
+let audio;
+if(typeof Audio != "undefined") {
+    audio = new Audio('https://res.cloudinary.com/djodj3fio/video/upload/v1673613287/message.wav');
+    audio.volume = .4;
+} 
 
 const SocketProvider = ({ children, state, actions }) => {
 
@@ -26,17 +32,33 @@ const SocketProvider = ({ children, state, actions }) => {
 
         socket.on('receiveMessage', (message) => {
             function getChatMessagesCb() {
-                actions.pushChatMessage(message, true);
+                actions.pushChatMessage(message);
             }
             if(message.to === state.auth._id) {
+                // audio.volume()
                 const chatId = message.chatId;
                 const user = message.from;
                 const isChatInState = state.chat.chats.filter(chat => chat._id === chatId);
                 if(isChatInState.length != 0) {
+                    audio.play();
                     actions.pushChatMessage(message);
                 } else {
+                    audio.play();
+                    // console.log(user._id);
                     actions.getChatMessages({ _id: user._id }, getChatMessagesCb)
                 }
+            }
+        });
+
+        socket.on('editedMessage', (message) => {
+            if(message.to === state.auth._id) {
+                actions.editChatMessage(message, true);
+            }
+        });
+
+        socket.on('deletedMessage', (message) => {
+            if(message.to === state.auth._id) {
+                actions.deleteChatMessage(message, true);
             }
         });
         
@@ -81,6 +103,14 @@ const SocketProvider = ({ children, state, actions }) => {
         socket.emit('sendMessage', message);
     }
 
+    const editMessage = (message) => {
+        socket.emit('editMessage', message);
+    }
+
+    const deleteMessage = (message) => {
+        socket.emit('deleteMessage', message);
+    }
+
     const updateStatus = (user) => {
         socket.emit('userChangeStatus', user);
     }
@@ -104,6 +134,8 @@ const SocketProvider = ({ children, state, actions }) => {
     return (
         <SocketContext.Provider value={{
             sendMessage,
+            editMessage,
+            deleteMessage,
             updateStatus,
             sendFriendRequest,
             acceptFriendRequest,

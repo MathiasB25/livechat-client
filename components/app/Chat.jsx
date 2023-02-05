@@ -121,7 +121,12 @@ function AppChat({ state, actions, props }) {
                             { messages && messages.length !== 0 ? (
                                 <div className="flex flex-col gap-4 py-5">
                                     {messages.map( message => (
-                                        <AppChatMessage key={randomId()} message={message} />
+                                        <AppChatMessage key={randomId()} props={{
+                                            message,
+                                            chatId: chat._id,
+                                            to: user._id, 
+                                            auth: state.auth._id,
+                                        }} />
                                     ))}
                                 </div>
                             ) : (

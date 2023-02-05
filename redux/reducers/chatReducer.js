@@ -7,13 +7,15 @@ import {
     SET_MESSAGES_READ,
     SEND_CHAT_MESSAGE, 
     SEND_CHAT_MESSAGE_SUCCESS, 
+    EDIT_CHAT_MESSAGE,
+    EDIT_CHAT_MESSAGE_SUCCESS,
+    DELETE_CHAT_MESSAGE,
+    DELETE_CHAT_MESSAGE_SUCCESS,
     RESET_CHAT,
     CHAT_ERROR,
     // SOCKET.IO
     IO_PUSH_CHAT_MESSAGE,
     IO_PUSH_LAST_MESSAGE,
-    IO_EDIT_CHAT_MESSAGE,
-    IO_DELETE_CHAT_MESSAGE,
     IO_UPDATE_CHAT_FRIEND_STATUS
 } from '../types';
 
@@ -91,6 +93,47 @@ export default function(state = initalState, action) {
                 }),
                 error: false,
                 loading: false,
+            }
+        case EDIT_CHAT_MESSAGE:
+            return {
+                ...state,
+                loading: true
+            }
+        case EDIT_CHAT_MESSAGE_SUCCESS:
+            return {
+                ...state,
+                chats: state.chats.map(chat => {
+                    if(chat._id === action.payload._id) {
+                        const messages = chat.messages.map(message => {
+                            if(message._id === action.payload.message._id) {
+                                const newMessage = {...message, message: action.payload.message.message, edited: true}
+                                return newMessage;
+                            } else {
+                                return message;
+                            }
+                        })
+                        chat = {...chat, messages};
+                        return chat;
+                    }
+                    return chat;
+                })
+            }
+        case DELETE_CHAT_MESSAGE:
+            return {
+                ...state,
+                loading: true
+            }
+        case DELETE_CHAT_MESSAGE_SUCCESS:
+            return {
+                ...state,
+                chats: state.chats.map(chat => {
+                    if(chat._id === action.payload._id) {
+                        const messages = chat.messages.filter(message => message._id !== action.payload.message._id);
+                        chat = {...chat, messages};
+                        return chat;
+                    }
+                    return chat;
+                })
             }
         case CHAT_ERROR: 
             return {

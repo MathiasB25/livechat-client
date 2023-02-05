@@ -44,7 +44,7 @@ function AppSettingsSidebar({ page, changePage, state, actions }) {
                     <div className="bg-app-2 rounded" style={{width: '29rem'}}>
                         <div className="flex flex-col gap-3 pt-4 pb-12 px-5">
                             <div className="text-zinc-200 text-2xl font-semibold">Cerrar sesión</div>
-                            <div className="">¿ Estás seguro que deseas eliminar cerrar sesión ?</div>
+                            <div className="">¿ Estás seguro que deseas cerrar sesión ?</div>
                         </div>
                         <div className="bg-app-4 rounded-b p-3">
                             <div className="flex gap-5 justify-end">
